@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>Hierarchy</customSettingsType>
+    <enableFeeds>false</enableFeeds>
+    <fields>
+        <fullName>Disable_NonManaged_TriggerHandlers__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Disable all nonmanaged triggers that implement the TriggerHandler framework.</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Disable all nonmanaged triggers that implement the TriggerHandler framework.</inlineHelpText>
+        <label>Disable NonManaged Trigger Handlers</label>
+        <trackTrending>false</trackTrending>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
+        <fullName>NonManaged_TriggerHandlers_To_Disable__c</fullName>
+        <description>Comma delimited list of nonmanaged trigger handlers to disable. Example: 
+AccountTriggerHandler, OpportunityTriggerHandler</description>
+        <externalId>false</externalId>
+        <inlineHelpText>Comma delimited list of nonmanaged trigger handlers to disable. Example: 
+AccountTriggerHandler, OpportunityTriggerHandler</inlineHelpText>
+        <label>NonManaged Trigger Handlers To Disable</label>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>TextArea</type>
+    </fields>
+    <label>Control Flags</label>
+    <visibility>Public</visibility>
+</CustomObject>

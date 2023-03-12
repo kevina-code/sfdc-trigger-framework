@@ -145,15 +145,39 @@ public virtual class TriggerHandler {
   }
 
   // make sure this trigger should continue to run
+  // (Modified by Kevin Antonioli (braveitnow@pm.me) to allow granular admin control over which handlers run)
   @TestVisible
   private Boolean validateRun() {
-    if(!this.isTriggerExecuting || this.context == null) {
-      throw new TriggerHandlerException('Trigger handler called outside of Trigger execution');
+    if (!this.isTriggerExecuting || this.context == null) {
+      throw new TriggerHandlerException(
+        'Trigger handler called outside of Trigger execution'
+      );
     }
-    if(TriggerHandler.bypassedHandlers.contains(getHandlerName())) {
-      return false;
+    Set<String> adminDefinedBypassedHandlers = new Set<String>();
+
+    // comma delimited list of trigger handlers to disable defined in custom setting:
+    String toDisable = Control_Flags__c.getOrgDefaults()
+      .NonManaged_TriggerHandlers_To_Disable__c;
+
+    if (
+      Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c
+    ) {
+      // disable all nonmanaged triggers if custom setting flag is checked
+      for (ApexClass apexClass : [
+        SELECT Name
+        FROM ApexClass
+        WHERE NamespacePrefix = NULL
+      ]) {
+        adminDefinedBypassedHandlers.add(apexClass.Name);
+      }
+    } else if (toDisable != null) {
+      // disable specific nonmanaged triggers defined in custom setting as comma delimited string
+      for (String triggerHandlerStr : toDisable.split(',')) {
+        adminDefinedBypassedHandlers.add(triggerHandlerStr);
+      }
     }
-    return true;
+    Triggerhandler.bypassedHandlers.addAll(adminDefinedBypassedHandlers);
+    return !TriggerHandler.bypassedHandlers.contains(getHandlerName());
   }
 
   @TestVisible
