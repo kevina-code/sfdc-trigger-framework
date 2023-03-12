@@ -12,6 +12,21 @@ public virtual class TriggerHandler {
   @TestVisible
   private Boolean isTriggerExecuting;
 
+  // get list of nonmanaged Apex classes:
+  private static List<ApexClass> nonManagedApexClasses {
+    get {
+      if (nonManagedApexClasses == null) {
+        nonManagedApexClasses = [
+          SELECT Name
+          FROM ApexClass
+          WHERE NamespacePrefix = NULL
+        ];
+      }
+      return nonManagedApexClasses;
+    }
+    set;
+  }
+
   // static initialization
   static {
     loopCountMap = new Map<String, LoopCount>();
@@ -153,30 +168,26 @@ public virtual class TriggerHandler {
         'Trigger handler called outside of Trigger execution'
       );
     }
-    Set<String> adminDefinedBypassedHandlers = new Set<String>();
+    Set<String> controlFlagBypassedHandlers = new Set<String>();
 
     // comma delimited list of trigger handlers to disable defined in custom setting:
-    String toDisable = Control_Flags__c.getOrgDefaults()
+    String bypassedHandlersString = Control_Flags__c.getOrgDefaults()
       .NonManaged_TriggerHandlers_To_Disable__c;
 
     if (
       Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c
     ) {
       // disable all nonmanaged triggers if custom setting flag is checked
-      for (ApexClass apexClass : [
-        SELECT Name
-        FROM ApexClass
-        WHERE NamespacePrefix = NULL
-      ]) {
-        adminDefinedBypassedHandlers.add(apexClass.Name);
+      for (ApexClass apexClass : nonManagedApexClasses) {
+        controlFlagBypassedHandlers.add(apexClass.Name);
       }
-    } else if (toDisable != null) {
+    } else if (bypassedHandlersString != null) {
       // disable specific nonmanaged triggers defined in custom setting as comma delimited string
-      for (String triggerHandlerStr : toDisable.split(',')) {
-        adminDefinedBypassedHandlers.add(triggerHandlerStr);
+      for (String triggerHandlerStr : bypassedHandlersString.split(',')) {
+        controlFlagBypassedHandlers.add(triggerHandlerStr);
       }
     }
-    Triggerhandler.bypassedHandlers.addAll(adminDefinedBypassedHandlers);
+    Triggerhandler.bypassedHandlers.addAll(controlFlagBypassedHandlers);
     return !TriggerHandler.bypassedHandlers.contains(getHandlerName());
   }
 
