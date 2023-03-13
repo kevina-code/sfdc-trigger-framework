@@ -157,6 +157,8 @@ TriggerHandler.clearAllBypasses();
 // ... now handlers won't be ignored!
 ```
 
+Also, Salesforce Admins can bypass handlers globally or individually via the Control_Flags custom setting.
+
 ## Overridable Methods
 
 Here are all of the methods that you can override. All of the context possibilities are supported.
