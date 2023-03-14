@@ -1,144 +1,172 @@
-# ApexUtilities
-Useful Apex utility methods to save time and improve efficiency.
+# SFDC trigger framework
 
-These methods can be found in 2 places in this repo: 
-1.  The [ApexUtils.cls](https://github.com/kevina-code/apexutilities/blob/main/ApexUtils) file
-2.  Individually listed in the [ApexUtils Methods](https://github.com/kevina-code/apexutilities/tree/main/ApexUtils%20Methods) directory 
+[![npm version](https://badge.fury.io/js/sfdc-trigger-framework.svg)](https://badge.fury.io/js/sfdc-trigger-framework)
+[![Maintainability](https://api.codeclimate.com/v1/badges/eeeae5a492e34feace99/maintainability)](https://codeclimate.com/github/kevinohara80/sfdc-trigger-framework/maintainability)
 
-Usage:
-First, deploy [ApexUtils.cls](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils) and [ApexUtilsTest.cls](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtilsTest)
+I know, I know...another trigger framework. Bear with me. ;)
 
-**[Scheduler()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/Scheduler)** usage:
-1. Example Invocation:
-```java
-// queue a schedulable class called MySchedulableApexClassName to run 1.5 hours from now:
-ApexUtils.Scheduler scheduler = new ApexUtils.Scheduler(
-  'myJob', 'MySchedulableApexClassName').addHours(1).addMinutes(30).run();
-```
+## Overview
 
-**[getAllFieldsForSObjAsStr()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/getAllFieldsForSObjAsStr)** usage:
-1. Example Invocation::
-```java
-// query all fields on 10 Accounts:
-List<Account> accounts = Database.query('SELECT ' + ApexUtils.getAllFieldsForSObjAsStr('Account') + ' FROM Account LIMIT 10');
-```
+Triggers should (IMO) be logicless. Putting logic into your triggers creates un-testable, difficult-to-maintain code. It's widely accepted that a best-practice is to move trigger logic into a handler class.
 
-**[getEnvironmentName()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/getEnvironmentName)** usage:
-1. Example Invocation:
-```java
-// get the environment name of the org. For example, if org URL is 'https://xyzcompany.my.salesforce.com', this will return 'xyzcompany'
-String environmentName = ApexUtils.getEnvironmentName(); 
-```
+This trigger framework bundles a single **TriggerHandler** base class that you can inherit from in all of your trigger handlers. The base class includes context-specific methods that are automatically called when a trigger is executed.
 
-**[getFieldSetFieldAPINames()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/getFieldSetFieldAPINames)** usage:
-1. Example Invocation:
-```java
-// get the field API Names for fields in a particular field set:
-List<String> acctFieldSetFieldApiNames = ApexUtils.getFieldSetFieldAPINames('Account_Field_Set_1', 'Account'); 
-```
+The base class also provides a secondary role as a supervisor for Trigger execution. It acts like a watchdog, monitoring trigger activity and providing an api for controlling certain aspects of execution and control flow.
 
-**[getFilesOnRecord()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/getFilesOnRecord)** usage:
-1. Example Invocation:
+But the most important part of this framework is that it's minimal and simple to use. 
+
+**Deploy to SFDX Scratch Org:**
+[![Deploy](https://deploy-to-sfdx.com/dist/assets/images/DeployToSFDX.svg)](https://deploy-to-sfdx.com)
+
+**Deploy to Salesforce Org:**
+[![Deploy](https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png)](https://githubsfdeploy.herokuapp.com/?owner=kevinohara80&repo=sfdc-trigger-framework&ref=master)
+
+## Usage
+
+To create a trigger handler, you simply need to create a class that inherits from **TriggerHandler.cls**. Here is an example for creating an Opportunity trigger handler.
 
 ```java
-// example data:
-Account account = [SELECT Id FROM Account LIMIT 1];
-
-// get .csv files on an Account record
-List<ContentVersion> acctCsvFiles = ApexUtils.getFilesOnRecord(account, 'csv');
+public class OpportunityTriggerHandler extends TriggerHandler {
 ```
 
-**[groupBy()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/groupBy)** usage:
-1. Example Invocation:
+In your trigger handler, to add logic to any of the trigger contexts, you only need to override them in your trigger handler. Here is how we would add logic to a `beforeUpdate` trigger.
+
 ```java
-// example data:
-List<Account> accounts = [SELECT Id, ParentId, Name FROM Account LIMIT 10];
+public class OpportunityTriggerHandler extends TriggerHandler {
 
-// group accounts by ParentId:
-Map<String, List<Account>> acctsByParentId = ApexUtils.groupBy(accounts, 'ParentId');
+  /* Optional Constructor - better performance */
+  public OpportunityTriggerHandler(){
+    super('OpportunityTriggerHandler');
+  }
+  
+  public override void beforeUpdate() {
+    for(Opportunity o : (List<Opportunity>) Trigger.new) {
+      // do something
+    }
+  }
+
+  // add overrides for other contexts
+
+}
 ```
 
-**[mapSorter()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/mapSorter)** usage:
-1. Example Invocation:
+**Note:** When referencing the Trigger statics within a class, SObjects are returned versus SObject subclasses like Opportunity, Account, etc. This means that you must cast when you reference them in your trigger handler. You could do this in your constructor if you wanted. 
+
 ```java
-// example data:
-Map<Id, Account> accountMap = new Map<Id, Account>([SELECT Id, Name FROM Account LIMIT 10]);
-Map<Id, Contact> contactMap = new Map<Id, Contact>([SELECT Id, Name FROM Contact LIMIT 10]);
-Map<Id, Contact> accountMap2 = new Map<Id, Contact>([SELECT Id, Name FROM Contact LIMIT 10]);
+public class OpportunityTriggerHandler extends TriggerHandler {
+  
+  /* Optional Constructor - better performance */
+  public OpportunityTriggerHandler(){
+    super('OpportunityTriggerHandler');
+  }
+  
+  private Map<Id, Opportunity> newOppMap;
 
-Map<Id, SObject> acctsAndContactsMap = new Map<Id, SObject>();
-acctsAndContactsMap.putAll(accountMap);
-acctsAndContactsMap.putAll(contactMap);
-acctsAndContactsMap.putAll(accountMap2);
+  public OpportunityTriggerHandler() {
+    this.newOppMap = (Map<Id, Opportunity>) Trigger.newMap;
+  }
+  
+  public override void afterUpdate() {
+    //
+  }
 
-// sort SObject map by Id, essentially sorting by object api name; useful for when performing DML on an SObject list with multiple object types:
-Map<Id, SObject> sortedMap = ApexUtils.mapSorter(acctsAndContactsMap);
+}
 ```
 
-**[mapSorterByNumOfChildren()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/mapSorterByNumOfChildren)** usage:
-1. Example Invocation:
+To use the trigger handler, you only need to construct an instance of your trigger handler within the trigger handler itself and call the `run()` method. Here is an example of the Opportunity trigger.
+
 ```java
-// example data:
-Map<Id, Account> accountMap = new Map<Id, Account>([SELECT Id, Name FROM Account LIMIT 10]);
-Map<Id, Contact> contactMap = new Map<Id, Contact>([SELECT Id, Name FROM Contact LIMIT 7]);
-Map<Id, Opportunity> oppMap = new Map<Id, Opportunity>([SELECT Id, Name FROM Opportunity LIMIT 13]);
-
-Map<Id, SObject> recordsMap = new Map<Id, SObject>();
-recordsMap.putAll(accountMap);
-recordsMap.putAll(contactMap);
-recordsMap.putAll(oppMap);
-
-// sort SObject map by SObject type's number of records ascending (instead of 10, 7, 13, the order will be 7, 10, 13)
-Map<Id, SObject> sortedMap = ApexUtils.mapSorterByNumOfChildren(recordsMap);
+trigger OpportunityTrigger on Opportunity (before insert, before update) {
+  new OpportunityTriggerHandler().run();
+}
 ```
 
-**[parseFieldPathForSObject()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/parseFieldPathForSObject)** usage:
-1. Example Invocation:
+## Cool Stuff
+
+### Max Loop Count
+
+To prevent recursion, you can set a max loop count for Trigger Handler. If this max is exceeded, and exception will be thrown. A great use case is when you want to ensure that your trigger runs once and only once within a single execution. Example:
+
 ```java
-// example data:
-Contact contact = [SELECT Id, Name, Account.Name FROM Contact LIMIT 1];
+public class OpportunityTriggerHandler extends TriggerHandler {
+  
+  /* Optional Constructor - better performance */
+  public OpportunityTriggerHandler(){
+    super('OpportunityTriggerHandler');
+  }
+  
+  public OpportunityTriggerHandler() {
+    this.setMaxLoopCount(1);
+  }
+  
+  public override void afterUpdate() {
+    List<Opportunity> opps = [SELECT Id FROM Opportunity WHERE Id IN :Trigger.newMap.keySet()];
+    update opps; // this will throw after this update
+  }
 
-// dynamically get the field value as an Object for a multi-dimensional path:
-Object fieldValueObj = ApexUtils.parseFieldPathForSObject(contact, 'Account.Name');
+}
 ```
 
-**[readFieldSet()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/readFieldSet)** usage:
-1. Example Invocation:
+### Bypass API
+
+What if you want to tell other trigger handlers to halt execution? That's easy with the bypass api:
+
 ```java
-// read a field set and cast it into a List<Schema.FieldSetMember>
-List<Schema.FieldSetMember> fieldSet = ApexUtils.readFieldSet('Account_Field_Set_1', 'Account');
+public class OpportunityTriggerHandler extends TriggerHandler {
+  
+  /* Optional Constructor - better performance */
+  public OpportunityTriggerHandler(){
+    super('OpportunityTriggerHandler');
+  }
+  
+  public override void afterUpdate() {
+    List<Opportunity> opps = [SELECT Id, AccountId FROM Opportunity WHERE Id IN :Trigger.newMap.keySet()];
+    
+    Account acc = [SELECT Id, Name FROM Account WHERE Id = :opps.get(0).AccountId];
+
+    TriggerHandler.bypass('AccountTriggerHandler');
+
+    acc.Name = 'No Trigger';
+    update acc; // won't invoke the AccountTriggerHandler
+
+    TriggerHandler.clearBypass('AccountTriggerHandler');
+
+    acc.Name = 'With Trigger';
+    update acc; // will invoke the AccountTriggerHandler
+
+  }
+
+}
 ```
 
-**[findChangedRecs()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/findChangedRecs)** usage:
-1. Example Invocation:
+If you need to check if a handler is bypassed, use the `isBypassed` method:
+
 ```java
-// in an Account trigger context, get accounts where Name has changed:
-List<SObject> changedAccounts = ApexUtils.findChangedRecs(
-  accounts,
-  accountMap,
-  Schema.Account.Name
-);
+if (TriggerHandler.isBypassed('AccountTriggerHandler')) {
+  // ... do something if the Account trigger handler is bypassed!
+}
 ```
 
-**[findChangedRecsWithMatchingVal()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/findChangedRecsWithMatchingVal)** usage:
-1. Example Invocation:
+If you want to clear all bypasses for the transaction, simple use the `clearAllBypasses` method, as in:
+
 ```java
-// in an Account trigger context, get accounts where Name has changed to 'ABC Corp':
-List<SObject> changedAccounts = ApexUtils.findChangedRecsWithMatchingVal(
-  accounts,
-  accountMap,
-  Schema.Account.Name,
-  'ABC Corp'
-);
+// ... done with bypasses!
+
+TriggerHandler.clearAllBypasses();
+
+// ... now handlers won't be ignored!
 ```
 
-**[findRecsWithMatchingValue()](https://github.com/kevina-code/ApexUtilities/blob/main/ApexUtils%20Methods/findRecsWithMatchingValue)** usage:
-1. Example Invocation:
-```java
-// given a list of Accounts, find those whose Type = 'Business':
-List<SObject> accountsToCheck = ApexUtils.findRecsWithMatchingValue(
-  accounts,
-  Schema.Account.Type,
-  'Business'
-);
-```
+Salesforce Admins (non-devs) can bypass handlers globally or granularily via the Control_Flags custom setting.
+
+## Overridable Methods
+
+Here are all of the methods that you can override. All of the context possibilities are supported.
+
+* `beforeInsert()`
+* `beforeUpdate()`
+* `beforeDelete()`
+* `afterInsert()`
+* `afterUpdate()`
+* `afterDelete()`
+* `afterUndelete()`
