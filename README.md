@@ -16,7 +16,10 @@ The base class also provides a secondary role as a supervisor for Trigger execut
 But the most important part of this framework is that it's minimal and simple to use. 
 
 **Deploy to Salesforce Org:**
-[![Deploy](https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png)](https://githubsfdeploy.herokuapp.com/?owner=kevina-code&repo=sfdc-trigger-framework&ref=master)
+
+<a href="https://githubsfdeploy.herokuapp.com">
+  <img src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png" alt="Deploy to Salesforce" />
+</a>
 
 ## Usage
 
