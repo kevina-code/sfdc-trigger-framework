@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
     <fields>
+        <fullName>Disable_NonManaged_Trigger_Handlers__c</fullName>
+        <defaultValue>false</defaultValue>
+        <description>Disable all nonmanaged trigger handlers for a specified Profile.</description>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Disable all nonmanaged trigger handlers for a specified Profile.</inlineHelpText>
+        <label>Disable NonManaged Trigger Handlers</label>
+        <type>Checkbox</type>
+    </fields>
+    <fields>
         <fullName>NonManaged_TriggerHandlers_To_Disable__c</fullName>
         <description>Comma delimited list of nonmanaged triggerhandlers to disable for a given profile.</description>
         <externalId>false</externalId>

@@ -10,6 +10,7 @@
     <types>
         <members>Control_Flags__c.Disable_NonManaged_TriggerHandlers__c</members>
         <members>Control_Flags__c.NonManaged_TriggerHandlers_To_Disable__c</members>
+        <members>Trigger_Handler_Override__mdt.Disable_NonManaged_Trigger_Handlers__c</members>
         <members>Trigger_Handler_Override__mdt.NonManaged_TriggerHandlers_To_Disable__c</members>
         <members>Trigger_Handler_Override__mdt.Profile__c</members>
         <name>CustomField</name>
@@ -18,6 +19,10 @@
         <members>Control_Flags__c</members>
         <members>Trigger_Handler_Override__mdt</members>
         <name>CustomObject</name>
+    </types>
+    <types>
+        <members>Trigger_Handler_Override__mdt-Trigger Handler Override Layout</members>
+        <name>Layout</name>
     </types>
     <version>55.0</version>
 </Package>

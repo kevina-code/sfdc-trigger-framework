@@ -199,8 +199,12 @@ public virtual class TriggerHandler {
     String bypassedHandlersString = Control_Flags__c.getOrgDefaults()
       .NonManaged_TriggerHandlers_To_Disable__c;
 
+    // profile-based trigger handler overrides:
+    Trigger_Handler_Override__mdt pbthOverrides = getProfileBasedOverrides();
+
     if (
-      Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c
+      Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c ||
+      (pbthOverrides?.Disable_NonManaged_Trigger_Handlers__c)
     ) {
       // disable all nonmanaged triggers if custom setting flag is checked
       for (ApexClass apexClass : nonManagedApexClasses) {
@@ -214,12 +218,9 @@ public virtual class TriggerHandler {
     }
 
     // get any granular overrides configured based on profile:
-    Trigger_Handler_Override__mdt thOverride = Trigger_Handler_Override__mdt.getInstance(
-      ApexUtils.loggedInUserProfile.Name.replace(' ', '_')
-    );
-    if (thOverride.NonManaged_TriggerHandlers_To_Disable__c != null) {
+    if (pbthOverrides != null) {
       for (
-        String tHandler : thOverride.NonManaged_TriggerHandlers_To_Disable__c.split(
+        String tHandler : pbthOverrides.NonManaged_TriggerHandlers_To_Disable__c.split(
           ','
         )
       ) {
@@ -229,6 +230,23 @@ public virtual class TriggerHandler {
 
     Triggerhandler.bypassedHandlers.addAll(controlFlagBypassedHandlers);
     return !TriggerHandler.bypassedHandlers.contains(getHandlerName());
+  }
+
+  /**
+   * @description: get profile based trigger handler override based on the the current logged in user profile
+   * @param   null
+   * @return  pbthOverrides profile-based trigger handler overrides
+   */
+  private static Trigger_Handler_Override__mdt getProfileBasedOverrides() {
+    Trigger_Handler_Override__mdt pbthOverrides;
+    try {
+      pbthOverrides = Trigger_Handler_Override__mdt.getInstance(
+        ApexUtils.loggedInUserProfile.Name.replace(' ', '_')
+      );
+    } catch (Exception e) {
+      System.debug(e);
+    }
+    return pbthOverrides;
   }
 
   @TestVisible
