@@ -157,9 +157,14 @@ TriggerHandler.clearAllBypasses();
 // ... now handlers won't be ignored!
 ```
 
-Salesforce Admins (non-devs) can bypass handlers globally or granularily via the Control_Flags custom setting.
+Salesforce Admins (non-devs) can bypass trigger handlers globally or granularily via the **Control_Flags** custom setting:
 
 ![image](https://user-images.githubusercontent.com/124932501/226738008-6d1dc7e0-146e-485d-811d-61bd8ae54880.png)
+
+Salesforce Admins (non-devs) can bypass trigger handlers via the **Trigger_Handler_Override** custom metadata type:
+
+![image](https://user-images.githubusercontent.com/124932501/227736335-69b2a73a-7558-4cb2-89c0-f4dc4815e156.png)
+
 
 ## Overridable Methods
 
