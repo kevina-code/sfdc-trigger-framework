@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>NonManaged_TriggerHandlers_To_Disable__c</fullName>
+        <description>Comma delimited list of nonmanaged triggerhandlers to disable for a given profile.</description>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Comma delimited list of nonmanaged triggerhandlers to disable for a given profile.</inlineHelpText>
+        <label>Nonmanaged TriggerHandlers To Disable</label>
+        <length>10000</length>
+        <type>LongTextArea</type>
+        <visibleLines>3</visibleLines>
+    </fields>
+    <fields>
+        <fullName>Profile__c</fullName>
+        <description>Name of profile to disable the specified trigger handlers for.</description>
+        <externalId>false</externalId>
+        <fieldManageability>DeveloperControlled</fieldManageability>
+        <inlineHelpText>Name of profile to disable the specified trigger handlers for.</inlineHelpText>
+        <label>Profile</label>
+        <length>255</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <label>Trigger Handler Override</label>
+    <pluralLabel>Trigger Handler Overrides</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

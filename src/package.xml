@@ -1,33 +1,23 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
-        <members>*</members>
+        <members>ApexUtils</members>
+        <members>ApexUtilsTest</members>
+        <members>TriggerHandler</members>
+        <members>TriggerHandler_Test</members>
         <name>ApexClass</name>
     </types>
     <types>
-        <members>*</members>
-        <name>ApexComponent</name>
+        <members>Control_Flags__c.Disable_NonManaged_TriggerHandlers__c</members>
+        <members>Control_Flags__c.NonManaged_TriggerHandlers_To_Disable__c</members>
+        <members>Trigger_Handler_Override__mdt.NonManaged_TriggerHandlers_To_Disable__c</members>
+        <members>Trigger_Handler_Override__mdt.Profile__c</members>
+        <name>CustomField</name>
     </types>
     <types>
-        <members>*</members>
-        <name>ApexPage</name>
+        <members>Control_Flags__c</members>
+        <members>Trigger_Handler_Override__mdt</members>
+        <name>CustomObject</name>
     </types>
-    <types>
-        <members>*</members>
-        <name>ApexTrigger</name>
-    </types>
-    <types>
-        <members>*</members>
-        <name>StaticResource</name>
-    </types>
-    <types>
-		<members>Control_Flags__c.Disable_NonManaged_TriggerHandlers__c</members>
-		<members>Control_Flags__c.NonManaged_TriggerHandlers_To_Disable__c</members>
-		<name>CustomField</name>
-	</types>
-	<types>
-		<members>Control_Flags__c</members>
-		<name>CustomObject</name>
-	</types>
-    <version>25.0</version>
+    <version>55.0</version>
 </Package>
