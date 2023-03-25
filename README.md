@@ -163,7 +163,7 @@ Salesforce Admins (non-devs) can bypass trigger handlers globally or granularily
 
 Salesforce Admins (non-devs) can bypass trigger handlers via the **Trigger_Handler_Override** custom metadata type:
 
-![Uploading image.png…]()
+![image](https://user-images.githubusercontent.com/124932501/227736335-69b2a73a-7558-4cb2-89c0-f4dc4815e156.png)
 
 
 ## Overridable Methods
