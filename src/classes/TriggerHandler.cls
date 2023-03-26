@@ -38,7 +38,7 @@ public virtual class TriggerHandler {
       }
       return loggedInUserProfile;
     }
-    private set;
+    set;
   }
 
   // static initialization
@@ -199,6 +199,23 @@ public virtual class TriggerHandler {
     }
   }
 
+  // profile-based trigger handler overrides:
+  private static Trigger_Handler_Override__mdt pbthOverrides {
+    get {
+      if (pbthOverrides == null) {
+        pbthOverrides = [
+          SELECT
+            Disable_NonManaged_TriggerHandlers__c,
+            NonManaged_TriggerHandlers_To_Disable__c
+          FROM Trigger_Handler_Override__mdt
+          WHERE Profile__c = :loggedInUserProfile.Name
+        ];
+      }
+      return pbthOverrides;
+    }
+    set;
+  }
+
   // make sure this trigger should continue to run
   // (Modified by Kevin Antonioli (braveitnow@pm.me) to allow granular admin control over which handlers run)
   @TestVisible
@@ -213,15 +230,6 @@ public virtual class TriggerHandler {
     // comma delimited list of trigger handlers to disable defined in custom setting:
     String bypassedHandlersString = Control_Flags__c.getOrgDefaults()
       .NonManaged_TriggerHandlers_To_Disable__c;
-
-    // profile-based trigger handler overrides:
-    Trigger_Handler_Override__mdt pbthOverrides = [
-      SELECT
-        Disable_NonManaged_TriggerHandlers__c,
-        NonManaged_TriggerHandlers_To_Disable__c
-      FROM Trigger_Handler_Override__mdt
-      WHERE Profile__c = :loggedInUserProfile.Name
-    ];
 
     if (
       Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c ||
