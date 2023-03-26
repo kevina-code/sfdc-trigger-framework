@@ -215,12 +215,18 @@ public virtual class TriggerHandler {
       .NonManaged_TriggerHandlers_To_Disable__c;
 
     // profile-based trigger handler overrides:
-    Trigger_Handler_Override__mdt pbthOverrides = getProfileBasedOverrides();
+    Trigger_Handler_Override__mdt pbthOverrides = [
+      SELECT
+        Disable_NonManaged_TriggerHandlers__c,
+        NonManaged_TriggerHandlers_To_Disable__c
+      FROM Trigger_Handler_Override__mdt
+      WHERE Profile__c = :loggedInUserProfile.Name
+    ];
 
     if (
       Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c ||
       (pbthOverrides != null &&
-      pbthOverrides.Disable_NonManaged_Trigger_Handlers__c)
+      pbthOverrides.Disable_NonManaged_TriggerHandlers__c)
     ) {
       // disable all nonmanaged triggers if custom setting flag is checked
       for (ApexClass apexClass : nonManagedApexClasses) {
@@ -234,35 +240,16 @@ public virtual class TriggerHandler {
     }
 
     // get any granular overrides configured based on profile:
-    if (pbthOverrides != null) {
-      for (
-        String tHandler : pbthOverrides.NonManaged_TriggerHandlers_To_Disable__c.split(
-          ','
-        )
-      ) {
-        Triggerhandler.bypassedHandlers.add(tHandler.trim());
-      }
+    for (
+      String tHandler : pbthOverrides.NonManaged_TriggerHandlers_To_Disable__c.split(
+        ','
+      )
+    ) {
+      Triggerhandler.bypassedHandlers.add(tHandler.trim());
     }
 
     Triggerhandler.bypassedHandlers.addAll(controlFlagBypassedHandlers);
     return !TriggerHandler.bypassedHandlers.contains(getHandlerName());
-  }
-
-  /**
-   * @description: get profile based trigger handler override based on the the current logged in user profile
-   * @param   null
-   * @return  pbthOverrides profile-based trigger handler overrides
-   */
-  private static Trigger_Handler_Override__mdt getProfileBasedOverrides() {
-    Trigger_Handler_Override__mdt pbthOverrides;
-    try {
-      pbthOverrides = Trigger_Handler_Override__mdt.getInstance(
-        loggedInUserProfile.Name.replace(' ', '_')
-      );
-    } catch (Exception e) {
-      System.debug(e);
-    }
-    return pbthOverrides;
   }
 
   @TestVisible
