@@ -11,7 +11,7 @@ public virtual class TriggerHandler {
   @TestVisible
   private Boolean isTriggerExecuting;
 
-  // get list of nonmanaged Apex classes:
+  // get list of nonmanaged Apex classes (consider moving this to a utils class)
   private static List<ApexClass> nonManagedApexClasses {
     get {
       if (nonManagedApexClasses == null) {
@@ -24,6 +24,21 @@ public virtual class TriggerHandler {
       return nonManagedApexClasses;
     }
     set;
+  }
+
+  // get logged in user profile (consider moving this to a utils class)
+  private static Profile loggedInUserProfile {
+    get {
+      if (loggedInUserProfile == null) {
+        loggedInUserProfile = [
+          SELECT Id, Name
+          FROM Profile
+          WHERE Id = :Userinfo.getProfileId()
+        ];
+      }
+      return loggedInUserProfile;
+    }
+    private set;
   }
 
   // static initialization
@@ -204,7 +219,8 @@ public virtual class TriggerHandler {
 
     if (
       Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c ||
-      (pbthOverrides?.Disable_NonManaged_Trigger_Handlers__c)
+      (pbthOverrides != null &&
+      pbthOverrides.Disable_NonManaged_Trigger_Handlers__c)
     ) {
       // disable all nonmanaged triggers if custom setting flag is checked
       for (ApexClass apexClass : nonManagedApexClasses) {
@@ -224,7 +240,7 @@ public virtual class TriggerHandler {
           ','
         )
       ) {
-        Triggerhandler.bypassedHandlers.add(tHandler);
+        Triggerhandler.bypassedHandlers.add(tHandler.trim());
       }
     }
 
@@ -241,7 +257,7 @@ public virtual class TriggerHandler {
     Trigger_Handler_Override__mdt pbthOverrides;
     try {
       pbthOverrides = Trigger_Handler_Override__mdt.getInstance(
-        ApexUtils.loggedInUserProfile.Name.replace(' ', '_')
+        loggedInUserProfile.Name.replace(' ', '_')
       );
     } catch (Exception e) {
       System.debug(e);
