@@ -11,6 +11,10 @@ public virtual class TriggerHandler {
   @TestVisible
   private Boolean isTriggerExecuting;
 
+  // profile based trigger handler overrides
+  @TestVisible
+  private static List<Trigger_Handler_Override__mdt> pbthOverridesForTest;
+
   // get list of nonmanaged Apex classes (consider moving this to a utils class)
   private static List<ApexClass> nonManagedApexClasses {
     get {
@@ -199,23 +203,6 @@ public virtual class TriggerHandler {
     }
   }
 
-  // profile-based trigger handler overrides:
-  private static Trigger_Handler_Override__mdt pbthOverrides {
-    get {
-      if (pbthOverrides == null) {
-        pbthOverrides = [
-          SELECT
-            Disable_NonManaged_TriggerHandlers__c,
-            NonManaged_TriggerHandlers_To_Disable__c
-          FROM Trigger_Handler_Override__mdt
-          WHERE Profile__c = :loggedInUserProfile.Name
-        ];
-      }
-      return pbthOverrides;
-    }
-    set;
-  }
-
   // make sure this trigger should continue to run
   // (Modified by Kevin Antonioli (braveitnow@pm.me) to allow granular admin control over which handlers run)
   @TestVisible
@@ -231,32 +218,50 @@ public virtual class TriggerHandler {
     String bypassedHandlersString = Control_Flags__c.getOrgDefaults()
       .NonManaged_TriggerHandlers_To_Disable__c;
 
+    Boolean allHandlersToBeDisabled = false;
     if (
-      Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c ||
-      (pbthOverrides != null &&
-      pbthOverrides.Disable_NonManaged_TriggerHandlers__c)
+      Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c
     ) {
-      // disable all nonmanaged triggers if custom setting flag is checked
+      // disable all nonmanaged triggers for all profiles if custom setting flag is checked
       for (ApexClass apexClass : nonManagedApexClasses) {
-        controlFlagBypassedHandlers.add(apexClass.Name);
+        Triggerhandler.bypassedHandlers.add(apexClass.Name);
       }
+      allHandlersToBeDisabled = true;
     } else if (bypassedHandlersString != null) {
-      // disable specific nonmanaged triggers defined in custom setting as comma delimited string
-      for (String triggerHandlerStr : bypassedHandlersString.split(',')) {
-        controlFlagBypassedHandlers.add(triggerHandlerStr);
+      // disable specific nonmanaged triggers for all profiles
+      for (String tHandlerString : bypassedHandlersString.split(',')) {
+        Triggerhandler.bypassedHandlers.add(tHandlerString);
       }
     }
 
-    // get any granular overrides configured based on profile:
-    for (
-      String tHandler : pbthOverrides.NonManaged_TriggerHandlers_To_Disable__c.split(
-        ','
-      )
-    ) {
-      Triggerhandler.bypassedHandlers.add(tHandler.trim());
+    // if control flag bypass all field is not checked:
+    if (!allHandlersToBeDisabled) {
+      // get any granular overrides configured based on profile:
+      for (
+        Trigger_Handler_Override__mdt thOverride : !Test.isRunningTest()
+          ? Trigger_Handler_Override__mdt.getAll().values()
+          : pbthOverridesForTest
+      ) {
+        String tHandlersToDisable = thOverride.NonManaged_TriggerHandlers_To_Disable__c;
+        if (
+          thOverride.Active__c &&
+          thOverride.Profile__c == loggedInUserProfile.Name
+        ) {
+          if (thOverride.Disable_NonManaged_TriggerHandlers__c) {
+            // disable all nonmanaged triggers for logged in user profile:
+            for (ApexClass apexClass : nonManagedApexClasses) {
+              Triggerhandler.bypassedHandlers.add(apexClass.Name);
+            }
+          } else if (tHandlersToDisable != null) {
+            // disable specific nonmanaged triggers for logged in user profile:
+            for (String tHandlerString : tHandlersToDisable.split(',')) {
+              Triggerhandler.bypassedHandlers.add(tHandlerString.trim());
+            }
+          }
+        }
+      }
     }
 
-    Triggerhandler.bypassedHandlers.addAll(controlFlagBypassedHandlers);
     return !TriggerHandler.bypassedHandlers.contains(getHandlerName());
   }
 
