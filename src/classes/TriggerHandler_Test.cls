@@ -10,6 +10,7 @@ private class TriggerHandler_Test {
     handler = new TriggerHandler_Test.TestHandler();
     // override its internal trigger detection
     handler.isTriggerExecuting = true;
+    handler.pbthOverridesForTest = new List<Trigger_Handler_Override__mdt>();
   }
 
   /***************************************
@@ -178,6 +179,66 @@ private class TriggerHandler_Test {
     );
     System.assertEquals(
       false,
+      TriggerHandler.isBypassed('TestHandler'),
+      'test handler should be bypassed'
+    );
+    resetTest();
+
+    // test an override based on profile and run handler
+    handler.pbthOverridesForTest.add(
+      new Trigger_Handler_Override__mdt(
+        NonManaged_TriggerHandlers_To_Disable__c = 'TestHandler',
+        Disable_NonManaged_TriggerHandlers__c = false,
+        Active__c = true,
+        Profile__c = 'System Administrator'
+      )
+    );
+    handler.run();
+    System.assertEquals(
+      null,
+      lastMethodCalled,
+      'last method should be null when bypassed'
+    );
+    System.assertEquals(
+      true,
+      TriggerHandler.isBypassed('TestHandler'),
+      'test handler should be bypassed'
+    );
+
+    //
+    resetTest();
+
+    // test another override based on profile and run handler
+    handler.pbthOverridesForTest.add(
+      new Trigger_Handler_Override__mdt(
+        Disable_NonManaged_TriggerHandlers__c = true,
+        Active__c = true,
+        Profile__c = 'System Administrator'
+      )
+    );
+    handler.run();
+    System.assertEquals(
+      null,
+      lastMethodCalled,
+      'last method should be null when bypassed'
+    );
+    System.assertEquals(
+      true,
+      TriggerHandler.isBypassed('TestHandler'),
+      'test handler should be bypassed'
+    );
+    resetTest();
+
+    // test an override based on control flag custom setting
+    insert new Control_Flags__c(Disable_NonManaged_TriggerHandlers__c = true);
+    handler.run();
+    System.assertEquals(
+      null,
+      lastMethodCalled,
+      'last method should be null when bypassed'
+    );
+    System.assertEquals(
+      true,
       TriggerHandler.isBypassed('TestHandler'),
       'test handler should be bypassed'
     );
