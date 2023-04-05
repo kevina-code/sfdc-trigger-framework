@@ -11,39 +11,25 @@ public virtual class TriggerHandler {
   @TestVisible
   private Boolean isTriggerExecuting;
 
-  // profile based trigger handler overrides
+  // org wide control flags
   @TestVisible
-  private static List<Trigger_Handler_Override__mdt> pbthOverridesForTest;
+  private Control_Flags__c orgControlFlags = Control_Flags__c.getOrgDefaults();
 
-  // get list of nonmanaged Apex classes (consider moving this to a utils class)
-  private static List<ApexClass> nonManagedApexClasses {
-    get {
-      if (nonManagedApexClasses == null) {
-        nonManagedApexClasses = [
-          SELECT Name
-          FROM ApexClass
-          WHERE NamespacePrefix = NULL
-        ];
-      }
-      return nonManagedApexClasses;
-    }
-    set;
-  }
+  // profile-specic control flags
+  @TestVisible
+  private Control_Flags__c profControlFlags = Control_Flags__c.getInstance(
+    UserInfo.getProfileId()
+  );
 
-  // get logged in user profile (consider moving this to a utils class)
-  private static Profile loggedInUserProfile {
-    get {
-      if (loggedInUserProfile == null) {
-        loggedInUserProfile = [
-          SELECT Id, Name
-          FROM Profile
-          WHERE Id = :Userinfo.getProfileId()
-        ];
-      }
-      return loggedInUserProfile;
-    }
-    set;
-  }
+  @TestVisible
+  // user-specific control flags
+  private Control_Flags__c userControlFlags = Control_Flags__c.getInstance(
+    UserInfo.getUserId()
+  );
+
+  // trigger handler bypasses defined in custom metadata type
+  @TestVisible
+  private Map<String, Trigger_Handler_Bypass__mdt> cmtThBpMap = Trigger_Handler_Bypass__mdt.getAll();
 
   // static initialization
   static {
@@ -212,52 +198,19 @@ public virtual class TriggerHandler {
         'Trigger handler called outside of Trigger execution'
       );
     }
-    Set<String> controlFlagBypassedHandlers = new Set<String>();
 
-    // comma delimited list of trigger handlers to disable defined in custom setting:
-    String bypassedHandlersString = Control_Flags__c.getOrgDefaults()
-      .NonManaged_TriggerHandlers_To_Disable__c;
-
-    Boolean allHandlersToBeDisabled = false;
+    // If control flag org-wide defaults are set to disable triggers,
+    //  OR control flag for the user profile is set to disable triggers,
+    //  OR control flag for the user is set to disable triggers,
+    //  bypass all non-managed trigger handlers defined in the Trigger_Handler_Bypass__mdt custom metadata type
     if (
-      Control_Flags__c.getOrgDefaults().Disable_NonManaged_TriggerHandlers__c
+      (orgControlFlags != null && orgControlFlags.Disable_Triggers__c) ||
+      (profControlFlags != null && profControlFlags.Disable_Triggers__c ||
+      (userControlFlags != null && userControlFlags.Disable_Triggers__c))
     ) {
-      // disable all nonmanaged triggers for all profiles if custom setting flag is checked
-      for (ApexClass apexClass : nonManagedApexClasses) {
-        Triggerhandler.bypassedHandlers.add(apexClass.Name);
-      }
-      allHandlersToBeDisabled = true;
-    } else if (bypassedHandlersString != null) {
-      // disable specific nonmanaged triggers for all profiles
-      for (String tHandlerString : bypassedHandlersString.split(',')) {
-        Triggerhandler.bypassedHandlers.add(tHandlerString);
-      }
-    }
-
-    // if control flag bypass all field is not checked:
-    if (!allHandlersToBeDisabled) {
-      // get any granular overrides configured based on profile:
-      for (
-        Trigger_Handler_Override__mdt thOverride : !Test.isRunningTest()
-          ? Trigger_Handler_Override__mdt.getAll().values()
-          : pbthOverridesForTest
-      ) {
-        String tHandlersToDisable = thOverride.NonManaged_TriggerHandlers_To_Disable__c;
-        if (
-          thOverride.Active__c &&
-          thOverride.Profile__c == loggedInUserProfile.Name
-        ) {
-          if (thOverride.Disable_NonManaged_TriggerHandlers__c) {
-            // disable all nonmanaged triggers for logged in user profile:
-            for (ApexClass apexClass : nonManagedApexClasses) {
-              Triggerhandler.bypassedHandlers.add(apexClass.Name);
-            }
-          } else if (tHandlersToDisable != null) {
-            // disable specific nonmanaged triggers for logged in user profile:
-            for (String tHandlerString : tHandlersToDisable.split(',')) {
-              Triggerhandler.bypassedHandlers.add(tHandlerString.trim());
-            }
-          }
+      for (Trigger_Handler_Bypass__mdt thBypass : cmtThBpMap.values()) {
+        if (thBypass.Active__c) {
+          Triggerhandler.bypassedHandlers.add(thBypass.DeveloperName);
         }
       }
     }
