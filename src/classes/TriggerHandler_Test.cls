@@ -10,7 +10,7 @@ private class TriggerHandler_Test {
     handler = new TriggerHandler_Test.TestHandler();
     // override its internal trigger detection
     handler.isTriggerExecuting = true;
-    handler.pbthOverridesForTest = new List<Trigger_Handler_Override__mdt>();
+    handler.cmtThBpMap = new Map<String, Trigger_Handler_Bypass__mdt>();
   }
 
   /***************************************
@@ -183,14 +183,88 @@ private class TriggerHandler_Test {
       'test handler should be bypassed'
     );
     resetTest();
+  }
+
+  @isTest
+  static void test_bypassForOrg() {
+    afterUpdateMode();
+
+    Control_Flags__c controlFlags = new Control_Flags__c(
+      Disable_Triggers__c = true
+    );
+    insert controlFlags;
+    handler.orgControlFlags = controlFlags;
+
+    // test a declaratively defined trigger handler bypass based on user
+    handler.cmtThBpMap.put(
+      'TestHandler',
+      new Trigger_Handler_Bypass__mdt(
+        DeveloperName = 'TestHandler',
+        Active__c = true
+      )
+    );
+    handler.run();
+    System.assertEquals(
+      null,
+      lastMethodCalled,
+      'last method should be null when bypassed'
+    );
+    System.assertEquals(
+      true,
+      TriggerHandler.isBypassed('TestHandler'),
+      'test handler should be bypassed'
+    );
+  }
+
+  @isTest
+  static void test_bypassForProfile() {
+    afterUpdateMode();
+
+    Control_Flags__c controlFlags = new Control_Flags__c(
+      Disable_Triggers__c = true,
+      SetupOwnerId = UserInfo.getProfileId()
+    );
+    insert controlFlags;
+    handler.userControlFlags = controlFlags;
+
+    // test a declaratively defined trigger handler bypass based on user
+    handler.cmtThBpMap.put(
+      'TestHandler',
+      new Trigger_Handler_Bypass__mdt(
+        DeveloperName = 'TestHandler',
+        Active__c = true
+      )
+    );
+    handler.run();
+    System.assertEquals(
+      null,
+      lastMethodCalled,
+      'last method should be null when bypassed'
+    );
+    System.assertEquals(
+      true,
+      TriggerHandler.isBypassed('TestHandler'),
+      'test handler should be bypassed'
+    );
+  }
+
+  @isTest
+  static void test_bypassForUser() {
+    afterUpdateMode();
+
+    Control_Flags__c controlFlags = new Control_Flags__c(
+      Disable_Triggers__c = true,
+      SetupOwnerId = UserInfo.getUserId()
+    );
+    insert controlFlags;
+    handler.userControlFlags = controlFlags;
 
     // test an override based on profile and run handler
-    handler.pbthOverridesForTest.add(
-      new Trigger_Handler_Override__mdt(
-        NonManaged_TriggerHandlers_To_Disable__c = 'TestHandler',
-        Disable_NonManaged_TriggerHandlers__c = false,
-        Active__c = true,
-        Profile__c = 'System Administrator'
+    handler.cmtThBpMap.put(
+      'TestHandler',
+      new Trigger_Handler_Bypass__mdt(
+        DeveloperName = 'TestHandler',
+        Active__c = true
       )
     );
     handler.run();
@@ -204,45 +278,6 @@ private class TriggerHandler_Test {
       TriggerHandler.isBypassed('TestHandler'),
       'test handler should be bypassed'
     );
-
-    //
-    resetTest();
-
-    // test another override based on profile and run handler
-    handler.pbthOverridesForTest.add(
-      new Trigger_Handler_Override__mdt(
-        Disable_NonManaged_TriggerHandlers__c = true,
-        Active__c = true,
-        Profile__c = 'System Administrator'
-      )
-    );
-    handler.run();
-    System.assertEquals(
-      null,
-      lastMethodCalled,
-      'last method should be null when bypassed'
-    );
-    System.assertEquals(
-      true,
-      TriggerHandler.isBypassed('TestHandler'),
-      'test handler should be bypassed'
-    );
-    resetTest();
-
-    // test an override based on control flag custom setting
-    insert new Control_Flags__c(Disable_NonManaged_TriggerHandlers__c = true);
-    handler.run();
-    System.assertEquals(
-      null,
-      lastMethodCalled,
-      'last method should be null when bypassed'
-    );
-    System.assertEquals(
-      true,
-      TriggerHandler.isBypassed('TestHandler'),
-      'test handler should be bypassed'
-    );
-    resetTest();
   }
 
   // instance method tests
