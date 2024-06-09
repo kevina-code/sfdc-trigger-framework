@@ -8,9 +8,13 @@ Added constructor for performance boost (thanks to Mr Barsotti)
 
 ## Setup: ## 
 Create a Trigger_Handler_Bypass__mdt record for every one of your org's current non-managed trigger handlers.
+
 Name/Label: Trigger Handler Name (ex: AccountTriggerHandler)
+
 Active__c: false (change to true if you want to apply an org-wide, profile-based, or user-based bypass for the given Trigger Handler Name)
+
 Here's a class and accompanying execute anonymous script to make this way faster than doing it in the UI: https://github.com/kevina-code/DeployCustomMetadata
+
 Then, going forward, when someone creates a new trigger handler apex class in your org, create a  Trigger_Handler_Bypass__mdt record for that handler as well.
 
 
