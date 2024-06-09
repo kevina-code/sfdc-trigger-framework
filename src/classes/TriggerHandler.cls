@@ -205,8 +205,8 @@ public virtual class TriggerHandler {
     //  bypass all non-managed trigger handlers defined in the Trigger_Handler_Bypass__mdt custom metadata type
     if (
       (orgControlFlags != null && orgControlFlags.Disable_Triggers__c) ||
-      (profControlFlags != null && profControlFlags.Disable_Triggers__c ||
-      (userControlFlags != null && userControlFlags.Disable_Triggers__c))
+      (profControlFlags != null && profControlFlags.Disable_Triggers__c) ||
+      (userControlFlags != null && userControlFlags.Disable_Triggers__c)
     ) {
       for (Trigger_Handler_Bypass__mdt thBypass : cmtThBpMap.values()) {
         if (thBypass.Active__c) {
