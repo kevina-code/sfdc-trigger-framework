@@ -1,19 +1,55 @@
 # SFDC trigger framework
 
-[![npm version](https://badge.fury.io/js/sfdc-trigger-framework.svg)](https://badge.fury.io/js/sfdc-trigger-framework)
-[![Maintainability](https://api.codeclimate.com/v1/badges/eeeae5a492e34feace99/maintainability)](https://codeclimate.com/github/kevinohara80/sfdc-trigger-framework/maintainability)
+Overview:
+This is Kevin Ohara's Trigger Handler framework, with a few upgrades:
 
-I know, I know...another trigger framework. Bear with me. ;)
+Admin-configurable bypasses via custom setting/custom metadata type (I added these to empower non-dev admins to bypass handlers)
+Added constructor for performance boost (thanks to Mr Barsotti)
 
-## Overview
+## Setup: ## 
+Create a Trigger_Handler_Bypass__mdt record for every one of your org's current non-managed trigger handlers.
+Name/Label: Trigger Handler Name (ex: AccountTriggerHandler)
+Active__c: false (change to true if you want to apply an org-wide, profile-based, or user-based bypass for the given Trigger Handler Name)
+Here's a class and accompanying execute anonymous script to make this way faster than doing it in the UI: https://github.com/kevina-code/DeployCustomMetadata
+Then, going forward, when someone creates a new trigger handler apex class in your org, create a  Trigger_Handler_Bypass__mdt record for that handler as well.
 
-Triggers should (IMO) be logicless. Putting logic into your triggers creates un-testable, difficult-to-maintain code. It's widely accepted that a best-practice is to move trigger logic into a handler class.
 
-This trigger framework bundles a single **TriggerHandler** base class that you can inherit from in all of your trigger handlers. The base class includes context-specific methods that are automatically called when a trigger is executed.
+## Scenarios: ## 
+**Global bypasses:**
 
-The base class also provides a secondary role as a supervisor for Trigger execution. It acts like a watchdog, monitoring trigger activity and providing an api for controlling certain aspects of execution and control flow.
+##  disable all non-managed triggers for all users
+Set the Control_Flag__c.Disable_Triggers__c organization default to true
+Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
 
-But the most important part of this framework is that it's minimal and simple to use. 
+##  disable all non-managed triggers for specific profile(s):
+Set the Control_Flag__c.Disable_Triggers__c organization default to false
+Create a Control_Flag__c instance for the desired profile(s)
+Set Disable_Triggers__c to true on those instances
+Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
+
+**Scenario 3:** disable all non-managed triggers for specific user(s):
+Set the Control_Flag__c.Disable_Triggers__c organization default to false
+Create a Control_Flag__c instance for the desired user(s)
+Set Disable_Triggers__c to true on those instances
+Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
+
+**Granular bypasses:**
+
+**Scenario 4:** disable specific non-managed triggers for all users
+Set the Control_Flag__c.Disable_Triggers__c organization default to false
+Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
+
+**Scenario 5:** disable specific non-managed triggers for specific profile(s):
+Set the Control_Flag__c.Disable_Triggers__c organization default to false
+Create a Control_Flag__c instance for the desired profile(s)
+Set Disable_Triggers__c to true on those instances
+Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
+
+**Scenario 6:** disable specific non-managed triggers for specific users(s):
+Set the Control_Flag__c.Disable_Triggers__c organization default to false
+Create a Control_Flag__c instance for the desired user(s)
+Set Disable_Triggers__c to true on those instances
+Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
 
 **Deploy to Salesforce Org:**
 
