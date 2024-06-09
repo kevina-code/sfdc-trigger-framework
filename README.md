@@ -3,8 +3,8 @@
 Overview:
 This is Kevin Ohara's Trigger Handler framework, with a few upgrades:
 
-Admin-configurable bypasses via custom setting/custom metadata type (I added these to empower non-dev admins to bypass handlers)
-Added constructor for performance boost (thanks to Mr Barsotti)
+1. Admin-configurable bypasses via custom setting/custom metadata type (I added these to empower non-dev admins to bypass handlers)
+2. Added constructor for performance boost (thanks to Mr Barsotti)
 
 ## Setup: ## 
 Create a Trigger_Handler_Bypass__mdt record for every one of your org's current non-managed trigger handlers.
@@ -26,34 +26,34 @@ Then, going forward, when someone creates a new trigger handler apex class in yo
 2. Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
 
 ##  disable all non-managed triggers for specific profile(s):
-Set the Control_Flag__c.Disable_Triggers__c organization default to false
-Create a Control_Flag__c instance for the desired profile(s)
-Set Disable_Triggers__c to true on those instances
-Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
+1. Set the Control_Flag__c.Disable_Triggers__c organization default to false
+2. Create a Control_Flag__c instance for the desired profile(s)
+3. Set Disable_Triggers__c to true on those instances
+4.Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
 
 **Scenario 3:** disable all non-managed triggers for specific user(s):
-Set the Control_Flag__c.Disable_Triggers__c organization default to false
-Create a Control_Flag__c instance for the desired user(s)
-Set Disable_Triggers__c to true on those instances
-Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
+1. Set the Control_Flag__c.Disable_Triggers__c organization default to false
+2. Create a Control_Flag__c instance for the desired user(s)
+3. Set Disable_Triggers__c to true on those instances
+4. Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
 
 **Granular bypasses:**
 
 **Scenario 4:** disable specific non-managed triggers for all users
-Set the Control_Flag__c.Disable_Triggers__c organization default to false
-Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
+1. Set the Control_Flag__c.Disable_Triggers__c organization default to false
+2. Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
 
 **Scenario 5:** disable specific non-managed triggers for specific profile(s):
-Set the Control_Flag__c.Disable_Triggers__c organization default to false
-Create a Control_Flag__c instance for the desired profile(s)
-Set Disable_Triggers__c to true on those instances
-Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
+1. Set the Control_Flag__c.Disable_Triggers__c organization default to false
+2. Create a Control_Flag__c instance for the desired profile(s)
+3. Set Disable_Triggers__c to true on those instances
+4. Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
 
 **Scenario 6:** disable specific non-managed triggers for specific users(s):
-Set the Control_Flag__c.Disable_Triggers__c organization default to false
-Create a Control_Flag__c instance for the desired user(s)
-Set Disable_Triggers__c to true on those instances
-Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
+1. Set the Control_Flag__c.Disable_Triggers__c organization default to false
+2. Create a Control_Flag__c instance for the desired user(s)
+3. Set Disable_Triggers__c to true on those instances
+4. Set the Active__c checkbox to true on specific Trigger_Handler_Bypass__mdt records
 
 **Deploy to Salesforce Org:**
 
