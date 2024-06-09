@@ -22,8 +22,8 @@ Then, going forward, when someone creates a new trigger handler apex class in yo
 **Global bypasses:**
 
 ##  disable all non-managed triggers for all users
-Set the Control_Flag__c.Disable_Triggers__c organization default to true
-Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
+1. Set the Control_Flag__c.Disable_Triggers__c organization default to true
+2. Set the Active__c checkbox to true on every Trigger_Handler_Bypass__mdt record
 
 ##  disable all non-managed triggers for specific profile(s):
 Set the Control_Flag__c.Disable_Triggers__c organization default to false
